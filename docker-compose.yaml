@@ -1,6 +1,21 @@
 version: '3'
 
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+      - "8000:8000"  # Mapeia a porta 8000 do contêiner para a porta 8000 do host (API HTTP)
+      - "50051:50051" # Mapeia a porta 50051 do contêiner para a porta 50051 do host (API gRPC)
+      - "8080:8080" # Mapeia a porta 8080 do contêiner para a porta 8080 do host (GraphQL)
+    depends_on:
+      - mysql
+      - rabbitmq
+    volumes:
+      - ./cmd/ordersystem/.env:/app/.env
+
   mysql:
     image: mysql:5.7
     container_name: mysql
@@ -12,7 +27,7 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - .docker/mysql:/var/lib/mysql
+      - db_data:/var/lib/mysql
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -37,3 +52,5 @@ services:
       - ./migrations:/migrations
     depends_on:
       - mysql
+volumes:
+    db_data: {}
